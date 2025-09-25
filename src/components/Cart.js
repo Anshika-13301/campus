@@ -5,7 +5,7 @@ const Cart = ({ cart }) => {
     <div className="bg-white p-6 rounded-xl shadow-lg">
       <h2 className="text-lg font-bold">🛒 Cart</h2>
       {cart.length === 0 ? (
-        <p className="mt-2 text-gray-500">Cart khaali hai.</p>
+        <p className="mt-2 text-gray-500">Cart is empty</p>
       ) : (
         <ul className="mt-2 space-y-2">
           {cart.map((item, i) => (

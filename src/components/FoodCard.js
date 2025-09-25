@@ -16,7 +16,7 @@ const FoodCard = ({ food, addToCart }) => {
         className="mt-2 w-full bg-black text-white py-2 rounded-lg"
         onClick={() => addToCart(food)}
       >
-        Order mein daalein
+        Add to cart 
       </button>
     </div>
   );
