@@ -11,7 +11,7 @@ const CampusMap3D = () => {
       <div className="text-center z-10">
         <div className="text-6xl mb-4">🏛️</div>
         <p className="text-xl font-semibold text-gray-600 mb-2">Interactive 3D Campus Map</p>
-        <p className="text-gray-500">Coming Soon</p>
+        {/* <p className="text-gray-500">Coming Soon</p> */}
       </div>
     </div>
   </div>
