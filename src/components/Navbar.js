@@ -1,4 +1,8 @@
-const Navbar = ({ searchTerm, setSearchTerm }) => (
+import React, { useState } from "react";
+
+const { useState: useProfileState } = React;
+
+const Navbar = ({ searchTerm, setSearchTerm, onProfileClick }) => (
   <nav className="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white px-6 py-4 shadow-xl sticky top-0 z-50 backdrop-blur-sm">
     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
       {/* Logo */}
@@ -24,7 +28,9 @@ const Navbar = ({ searchTerm, setSearchTerm }) => (
 
       {/* Profile button */}
       <div className="flex justify-center sm:justify-end">
-        <button className="bg-white text-green-600 px-6 py-3 rounded-2xl hover:bg-green-50 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+        <button 
+            onClick={onProfileClick}
+            className="bg-white text-green-600 px-6 py-3 rounded-2xl hover:bg-green-50 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
           👤 Profile
         </button>
       </div>

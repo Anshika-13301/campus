@@ -10,13 +10,15 @@ import CampusMap3D from "./components/CampusMap3D";
 import AiModal from "./components/AiModal";
 import CampusGuideModal from "./components/CampusGuideModal";
 import CommunitySuggestionModal from "./components/CommunitySuggestionModal";
+import ProfilePage from "./components/ProfilePage";
 
 function App() {
   const [cart, setCart] = useState([]);
-  const [points, ] = useState(125);
+  const [points, setPoints] = useState(125);
   const [showAiModal, setShowAiModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showCommunityModal, setShowCommunityModal] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   // 🔹 searchTerm state
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,9 +27,18 @@ function App() {
     setCart([...cart, item]);
   };
 
+  // Show profile page if requested
+  if (showProfile) {
+    return <ProfilePage onBack={() => setShowProfile(false)} />;
+  }
+
   return (
     <div className="bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 min-h-screen">
-      <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <Navbar 
+        searchTerm={searchTerm} 
+        setSearchTerm={setSearchTerm} 
+        onProfileClick={() => setShowProfile(true)}
+      />
 
       <div className="p-6 space-y-8 max-w-7xl mx-auto">
         <Banner />
