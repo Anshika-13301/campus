@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import Navbar from "./components/Navbar";
-import Banner from "./components/Banner";
-import Rewards from "./components/Rewards";
-import Discounts from "./components/Discounts";
-import Suggestions from "./components/Suggestions";
-import GroupOrder from "./components/GroupOrder";
-import Cart from "./components/Cart";
-import CampusMap3D from "./components/CampusMap3D";
-import AiModal from "./components/AiModal";
-import CampusGuideModal from "./components/CampusGuideModal";
-import CommunitySuggestionModal from "./components/CommunitySuggestionModal";
-import ProfilePage from "./components/ProfilePage";
+import Navbar from "./components/userDashboard/Navbar";
+import Banner from "./components/userDashboard/Banner";
+import Rewards from "./components/userDashboard/Rewards";
+import Discounts from "./components/userDashboard/Discounts";
+import Suggestions from "./components/userDashboard/Suggestions";
+import GroupOrder from "./components/userDashboard/GroupOrder";
+import Cart from "./components/userDashboard/Cart";
+import CampusMap3D from "./components/userDashboard/CampusMap3D";
+import AiModal from "./components/userDashboard/AiModal";
+import CampusGuideModal from "./components/userDashboard/CampusGuideModal";
+import CommunitySuggestionModal from "./components/userDashboard/CommunitySuggestionModal";
+import ProfilePage from "./components/userDashboard/ProfilePage";
 
 function App() {
   const [cart, setCart] = useState([]);
