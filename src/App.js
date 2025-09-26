@@ -17,13 +17,17 @@ function App() {
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showCommunityModal, setShowCommunityModal] = useState(false);
 
+  // 🔹 searchTerm state
+  const [searchTerm, setSearchTerm] = useState("");
+
   const addToCart = (item) => {
     setCart([...cart, item]);
   };
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <Navbar />
+      {/* Pass searchTerm + setSearchTerm */}
+      <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       <div className="p-4 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -31,7 +35,8 @@ function App() {
           <Discounts />
         </div>
 
-        <Suggestions addToCart={addToCart} />
+        {/* Pass searchTerm to Suggestions */}
+        <Suggestions searchTerm={searchTerm} addToCart={addToCart} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <GroupOrder />
