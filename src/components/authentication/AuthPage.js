@@ -8,7 +8,10 @@ const AuthPage = ({ onLogin }) => {
         password: '',
         name: '',
         studentId: '',
-        major: ''
+        major: '',
+        role: 'student',
+        canteenId: '',
+        position: ''
     });
     const [isLoading, setIsLoading] = useState(false);
 
@@ -23,17 +26,50 @@ const AuthPage = ({ onLogin }) => {
         e.preventDefault();
         setIsLoading(true);
 
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            // Mock successful login/signup
-            onLogin({
-                name: formData.name || 'Alex Johnson',
-                email: formData.email,
-                studentId: formData.studentId || 'ST2024001',
-                major: formData.major || 'Computer Science'
+        try {
+            const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3333';
+            const endpoint = isLogin ? 'login' : 'register';
+            const payload = isLogin
+                ? { email: formData.email, password: formData.password }
+                : {
+                    name: formData.name,
+                    email: formData.email,
+                    password: formData.password,
+                    role: formData.role,
+                    ...(formData.role === 'student'
+                        ? { major: formData.major, studentID: formData.studentId }
+                        : { canteenId: formData.canteenId, position: formData.position }
+                    )
+                };
+
+            const response = await fetch(`${API_URL}/api/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
             });
-        }, 1500);
+
+            const data = await response.json();
+
+            if (response.ok && (data.message === 'User registered successfully' || data.message === 'Login successful')) {
+                // Store token in localStorage
+                localStorage.setItem('campusBiteToken', data.token);
+
+                // Pass user data to parent component
+                onLogin({
+                    ...data.user,
+                    token: data.token
+                });
+            } else {
+                alert(data.message || 'An error occurred');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -60,8 +96,8 @@ const AuthPage = ({ onLogin }) => {
                         <button
                             onClick={() => setIsLogin(true)}
                             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${isLogin
-                                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
-                                    : 'text-gray-600 hover:text-green-600'
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                                : 'text-gray-600 hover:text-green-600'
                                 }`}
                         >
                             Login
@@ -69,8 +105,8 @@ const AuthPage = ({ onLogin }) => {
                         <button
                             onClick={() => setIsLogin(false)}
                             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${!isLogin
-                                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
-                                    : 'text-gray-600 hover:text-green-600'
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                                : 'text-gray-600 hover:text-green-600'
                                 }`}
                         >
                             Sign Up
@@ -79,6 +115,22 @@ const AuthPage = ({ onLogin }) => {
 
                     {/* Form */}
                     <div className="space-y-6">
+                        {/* Role Selection (Sign Up only) */}
+                        {!isLogin && (
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Account Type</label>
+                                <select
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-300 focus:border-green-500 transition-all duration-300 bg-gray-50 focus:bg-white"
+                                >
+                                    <option value="student">Student</option>
+                                    <option value="canteen_worker">Canteen Worker</option>
+                                </select>
+                            </div>
+                        )}
+
                         {/* Sign Up Fields */}
                         {!isLogin && (
                             <>
@@ -91,40 +143,81 @@ const AuthPage = ({ onLogin }) => {
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-300 focus:border-green-500 transition-all duration-300 bg-gray-50 focus:bg-white"
                                         placeholder="Enter your full name"
+                                        required
                                     />
                                 </div>
 
-                                <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">Student ID</label>
-                                    <input
-                                        type="text"
-                                        name="studentId"
-                                        value={formData.studentId}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-300 focus:border-green-500 transition-all duration-300 bg-gray-50 focus:bg-white"
-                                        placeholder="ST2024001"
-                                    />
-                                </div>
+                                {formData.role === 'student' ? (
+                                    <>
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Student ID</label>
+                                            <input
+                                                type="text"
+                                                name="studentId"
+                                                value={formData.studentId}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-300 focus:border-green-500 transition-all duration-300 bg-gray-50 focus:bg-white"
+                                                placeholder="ST2024001"
+                                                required
+                                            />
+                                        </div>
 
-                                <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">Major</label>
-                                    <select
-                                        name="major"
-                                        value={formData.major}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-300 focus:border-green-500 transition-all duration-300 bg-gray-50 focus:bg-white"
-                                    >
-                                        <option value="">Select your major</option>
-                                        <option value="Computer Science">Computer Science</option>
-                                        <option value="Engineering">Engineering</option>
-                                        <option value="Business">Business</option>
-                                        <option value="Psychology">Psychology</option>
-                                        <option value="Biology">Biology</option>
-                                        <option value="Mathematics">Mathematics</option>
-                                        <option value="English">English</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Major</label>
+                                            <select
+                                                name="major"
+                                                value={formData.major}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-300 focus:border-green-500 transition-all duration-300 bg-gray-50 focus:bg-white"
+                                                required
+                                            >
+                                                <option value="">Select your major</option>
+                                                <option value="Computer Science">Computer Science</option>
+                                                <option value="Engineering">Engineering</option>
+                                                <option value="Business">Business</option>
+                                                <option value="Psychology">Psychology</option>
+                                                <option value="Biology">Biology</option>
+                                                <option value="Mathematics">Mathematics</option>
+                                                <option value="English">English</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Canteen ID</label>
+                                            <input
+                                                type="text"
+                                                name="canteenId"
+                                                value={formData.canteenId}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-300 focus:border-green-500 transition-all duration-300 bg-gray-50 focus:bg-white"
+                                                placeholder="e.g., MAIN_CAFETERIA"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Position</label>
+                                            <select
+                                                name="position"
+                                                value={formData.position}
+                                                onChange={handleInputChange}
+                                                className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-300 focus:border-green-500 transition-all duration-300 bg-gray-50 focus:bg-white"
+                                                required
+                                            >
+                                                <option value="">Select your position</option>
+                                                <option value="Manager">Manager</option>
+                                                <option value="Chef">Chef</option>
+                                                <option value="Cashier">Cashier</option>
+                                                <option value="Server">Server</option>
+                                                <option value="Kitchen Helper">Kitchen Helper</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                    </>
+                                )}
                             </>
                         )}
 

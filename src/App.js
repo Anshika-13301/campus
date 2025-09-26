@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AuthPage from "./components/authentication/AuthPage";
 import Navbar from "./components/userDashboard/Navbar";
 import Banner from "./components/userDashboard/Banner";
@@ -12,102 +12,164 @@ import AiModal from "./components/userDashboard/AiModal";
 import CampusGuideModal from "./components/userDashboard/CampusGuideModal";
 import CommunitySuggestionModal from "./components/userDashboard/CommunitySuggestionModal";
 import ProfilePage from "./components/userDashboard/ProfilePage";
+import CanteenDashboard from "./components/canteenDashboard/CanteenDashboard";
 
 function App() {
-  // Add authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+    // Add authentication state
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-  const [cart, setCart] = useState([]);
-  const [points, setPoints] = useState(125);
-  const [showAiModal, setShowAiModal] = useState(false);
-  const [showGuideModal, setShowGuideModal] = useState(false);
-  const [showCommunityModal, setShowCommunityModal] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
+    const [cart, setCart] = useState([]);
+    const [points] = useState(125); // Removed setPoints as it's not used
+    const [showAiModal, setShowAiModal] = useState(false);
+    const [showGuideModal, setShowGuideModal] = useState(false);
+    const [showCommunityModal, setShowCommunityModal] = useState(false);
+    const [showProfile, setShowProfile] = useState(false);
 
-  // searchTerm state
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  // Add authentication handlers
-  const handleLogin = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-  };
+    // searchTerm state
+    const [searchTerm, setSearchTerm] = useState("");
 
-  const handleLogout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    setShowProfile(false); // Reset profile view
-  };
+    // Check for existing token on app load
+    useEffect(() => {
+        const checkAuthStatus = async () => {
+            const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3333';
+            const token = localStorage.getItem('campusBiteToken');
+            if (token) {
+                try {
+                    const response = await fetch(`${API_URL}/api/verify-token`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
 
-  const addToCart = (item) => {
-    setCart([...cart, item]);
-  };
+                    if (response.ok) {
+                        // Get user profile
+                        const profileResponse = await fetch(`${API_URL}/api/profile`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
 
-  // Show auth page if not authenticated
-  if (!isAuthenticated) {
-    return <AuthPage onLogin={handleLogin} />;
-  }
+                        if (profileResponse.ok) {
+                            const userData = await profileResponse.json();
+                            setUser({ ...userData, token });
+                            setIsAuthenticated(true);
+                        }
+                    } else {
+                        // Token is invalid, remove it
+                        localStorage.removeItem('campusBiteToken');
+                    }
+                } catch (error) {
+                    console.error('Auth check failed:', error);
+                    localStorage.removeItem('campusBiteToken');
+                }
+            }
+            setIsLoading(false);
+        };
 
-  // Show profile page if requested
-  if (showProfile) {
-    return <ProfilePage onBack={() => setShowProfile(false)} user={user} />;
-  }
+        checkAuthStatus();
+    }, []);
 
-  return (
-    <div className="bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 min-h-screen">
-      <Navbar 
-        searchTerm={searchTerm} 
-        setSearchTerm={setSearchTerm} 
-        onProfileClick={() => setShowProfile(true)}
-        onLogout={handleLogout}
-      />
+    // Add authentication handlers
+    const handleLogin = (userData) => {
+        setUser(userData);
+        setIsAuthenticated(true);
+    };
 
-      <div className="p-6 space-y-8 max-w-7xl mx-auto">
-        <Banner />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Rewards points={points} />
-          <Discounts />
+    const handleLogout = () => {
+        localStorage.removeItem('campusBiteToken');
+        setUser(null);
+        setIsAuthenticated(false);
+        setShowProfile(false); // Reset profile view
+    };
+
+    const addToCart = (item) => {
+        setCart([...cart, item]);
+    };
+
+    // Show loading spinner while checking auth status
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-blue-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show auth page if not authenticated
+    if (!isAuthenticated) {
+        return <AuthPage onLogin={handleLogin} />;
+    }
+
+    // Route based on user role
+    if (user.role === 'canteen_worker') {
+        return <CanteenDashboard user={user} onLogout={handleLogout} />;
+    }
+
+    // Student dashboard (default)
+    // Show profile page if requested
+    if (showProfile) {
+        return <ProfilePage onBack={() => setShowProfile(false)} user={user} />;
+    }
+
+    return (
+        <div className="bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 min-h-screen">
+            <Navbar
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                onProfileClick={() => setShowProfile(true)}
+                onLogout={handleLogout}
+            />
+
+            <div className="p-6 space-y-8 max-w-7xl mx-auto">
+                <Banner />
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <Rewards points={points} />
+                    <Discounts />
+                </div>
+
+                <Suggestions searchTerm={searchTerm} addToCart={addToCart} />
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <GroupOrder />
+                    <Cart cart={cart} />
+                </div>
+
+                <CampusMap3D />
+
+                <div className="flex flex-wrap gap-4 justify-center mt-12">
+                    <button
+                        className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
+                        onClick={() => setShowAiModal(true)}
+                    >
+                        🤖 AI Suggestions
+                    </button>
+                    <button
+                        className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
+                        onClick={() => setShowGuideModal(true)}
+                    >
+                        🗺️ Campus Guide
+                    </button>
+                    <button
+                        className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
+                        onClick={() => setShowCommunityModal(true)}
+                    >
+                        👥 Community
+                    </button>
+                </div>
+            </div>
+
+            {/* Modals */}
+            {showAiModal && <AiModal close={() => setShowAiModal(false)} />}
+            {showGuideModal && <CampusGuideModal close={() => setShowGuideModal(false)} />}
+            {showCommunityModal && <CommunitySuggestionModal close={() => setShowCommunityModal(false)} />}
         </div>
-
-        <Suggestions searchTerm={searchTerm} addToCart={addToCart} />
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <GroupOrder />
-          <Cart cart={cart} />
-        </div>
-
-        <CampusMap3D />
-
-        <div className="flex flex-wrap gap-4 justify-center mt-12">
-          <button
-            className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
-            onClick={() => setShowAiModal(true)}
-          >
-            🤖 AI Suggestions
-          </button>
-          <button
-            className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
-            onClick={() => setShowGuideModal(true)}
-          >
-            🗺️ Campus Guide
-          </button>
-          <button
-            className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
-            onClick={() => setShowCommunityModal(true)}
-          >
-            👥 Community
-          </button>
-        </div>
-      </div>
-
-      {/* Modals */}
-      {showAiModal && <AiModal close={() => setShowAiModal(false)} />}
-      {showGuideModal && <CampusGuideModal close={() => setShowGuideModal(false)} />}
-      {showCommunityModal && <CommunitySuggestionModal close={() => setShowCommunityModal(false)} />}
-    </div>
-  );
+    );
 }
 
 export default App;
