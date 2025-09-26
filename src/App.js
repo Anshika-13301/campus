@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AuthPage from "./components/authentication/AuthPage";
 import Navbar from "./components/userDashboard/Navbar";
 import Banner from "./components/userDashboard/Banner";
 import Rewards from "./components/userDashboard/Rewards";
@@ -13,6 +14,10 @@ import CommunitySuggestionModal from "./components/userDashboard/CommunitySugges
 import ProfilePage from "./components/userDashboard/ProfilePage";
 
 function App() {
+  // Add authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+
   const [cart, setCart] = useState([]);
   const [points, setPoints] = useState(125);
   const [showAiModal, setShowAiModal] = useState(false);
@@ -20,16 +25,33 @@ function App() {
   const [showCommunityModal, setShowCommunityModal] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
-  // 🔹 searchTerm state
+  // searchTerm state
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Add authentication handlers
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    setShowProfile(false); // Reset profile view
+  };
 
   const addToCart = (item) => {
     setCart([...cart, item]);
   };
 
+  // Show auth page if not authenticated
+  if (!isAuthenticated) {
+    return <AuthPage onLogin={handleLogin} />;
+  }
+
   // Show profile page if requested
   if (showProfile) {
-    return <ProfilePage onBack={() => setShowProfile(false)} />;
+    return <ProfilePage onBack={() => setShowProfile(false)} user={user} />;
   }
 
   return (
@@ -38,6 +60,7 @@ function App() {
         searchTerm={searchTerm} 
         setSearchTerm={setSearchTerm} 
         onProfileClick={() => setShowProfile(true)}
+        onLogout={handleLogout}
       />
 
       <div className="p-6 space-y-8 max-w-7xl mx-auto">
