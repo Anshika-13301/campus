@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Navbar from "./components/Navbar";
+import Banner from "./components/Banner";
 import Rewards from "./components/Rewards";
 import Discounts from "./components/Discounts";
 import Suggestions from "./components/Suggestions";
@@ -12,7 +13,7 @@ import CommunitySuggestionModal from "./components/CommunitySuggestionModal";
 
 function App() {
   const [cart, setCart] = useState([]);
-  const [points, setPoints] = useState(125);
+  const [points, ] = useState(125);
   const [showAiModal, setShowAiModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showCommunityModal, setShowCommunityModal] = useState(false);
@@ -25,44 +26,44 @@ function App() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Pass searchTerm + setSearchTerm */}
+    <div className="bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 min-h-screen">
       <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-      <div className="p-4 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="p-6 space-y-8 max-w-7xl mx-auto">
+        <Banner />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Rewards points={points} />
           <Discounts />
         </div>
 
-        {/* Pass searchTerm to Suggestions */}
         <Suggestions searchTerm={searchTerm} addToCart={addToCart} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <GroupOrder />
           <Cart cart={cart} />
         </div>
 
         <CampusMap3D />
 
-        <div className="flex gap-4 mt-6">
+        <div className="flex flex-wrap gap-4 justify-center mt-12">
           <button
-            className="bg-indigo-500 text-white px-4 py-2 rounded-lg"
+            className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
             onClick={() => setShowAiModal(true)}
           >
-            🤖 AI Suggestion
+            🤖 AI Suggestions
           </button>
           <button
-            className="bg-green-500 text-white px-4 py-2 rounded-lg"
+            className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
             onClick={() => setShowGuideModal(true)}
           >
-            🗺 Campus Guide
+            🗺️ Campus Guide
           </button>
           <button
-            className="bg-yellow-500 text-white px-4 py-2 rounded-lg"
+            className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-4 rounded-2xl font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center gap-2"
             onClick={() => setShowCommunityModal(true)}
           >
-            👥 Community Suggestions
+            👥 Community
           </button>
         </div>
       </div>
